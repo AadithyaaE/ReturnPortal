@@ -24,10 +24,56 @@ const REASONS = [
 
 function ReturnOptionsPage() {
   const navigate = useNavigate();
+
+  const [issueDescription, setIssueDescription] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
   const [returnType, setReturnType] = useState<string | null>(null);
   const [reason, setReason] = useState<string | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function analyzeWithAI() {
+    if (!issueDescription.trim()) return;
+
+    setAiLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/ai/classify-reason`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: issueDescription,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log(data);
+
+      const reasonMap: Record<string, string> = {
+        "Wrong Size": "wrong_size",
+        "Damaged Item": "damaged",
+        "Wrong Item": "wrong_item",
+        "Changed Mind": "changed_mind",
+      };
+
+      const returnTypeMap: Record<string, string> = {
+        Refund: "refund",
+        Exchange: "exchange",
+        "Store Credit": "store_credit",
+      };
+
+      setReason(reasonMap[data.reason] || null);
+      setReturnType(returnTypeMap[data.recommendation] || null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   useEffect(() => {
     const s = getState();
@@ -54,26 +100,32 @@ function ReturnOptionsPage() {
           reason,
         }),
       });
+      
       if (!res.ok) {
-  const err = await res.json();
-  throw new Error(err.detail);
-}
-const data = await res.json();
+        const errData = await res.json();
+        throw new Error(errData.detail || "Failed to create return record.");
+      }
+      
+      const data = await res.json();
 
-if (!data.return_id) {
-  setError(data.message || "Return could not be created");
-  return;
-}
+      if (!data.return_id) {
+        setError(data.message || "Return could not be created");
+        return;
+      }
 
-setState({
-  return_type: returnType,
-  reason,
-  return_id: String(data.return_id),
-});
+      setState({
+        return_type: returnType,
+        reason,
+        return_id: String(data.return_id),
+      });
 
-navigate({ to: "/confirmation" });
-    } catch (err: any) {
-      setError(err.message ?? "Something went wrong");
+      navigate({ to: "/confirmation" });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -95,11 +147,28 @@ navigate({ to: "/confirmation" });
           </div>
 
           <section className="mb-10">
+            <h2 className="text-lg font-semibold mb-4">Describe your issue</h2>
+            <textarea
+              value={issueDescription}
+              onChange={(e) => setIssueDescription(e.target.value)}
+              placeholder="Example: The shirt is too tight around my shoulders..."
+              className="w-full border border-outline-variant rounded-lg p-4 min-h-[120px]"
+            />
+            <button
+              onClick={analyzeWithAI}
+              className="mt-3 px-5 py-3 rounded-lg bg-primary text-on-primary font-semibold"
+            >
+              {aiLoading ? "Analyzing..." : "Analyze with AI"}
+            </button>
+          </section>
+
+          <section className="mb-10">
             <h2 className="text-lg font-semibold mb-4">Resolution</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {RETURN_TYPES.map((t) => (
                 <button
                   key={t.id}
+                  type="button"
                   onClick={() => setReturnType(t.id)}
                   className={`text-left p-5 rounded-xl border transition-all bg-surface-container-lowest ${
                     returnType === t.id
@@ -107,8 +176,12 @@ navigate({ to: "/confirmation" });
                       : "border-outline-variant hover:border-primary/50"
                   }`}
                 >
-                  <div className="text-base font-semibold text-primary mb-1">{t.label}</div>
-                  <div className="text-sm text-on-surface-variant">{t.desc}</div>
+                  <div className="text-base font-semibold text-primary mb-1">
+                    {t.label}
+                  </div>
+                  <div className="text-sm text-on-surface-variant">
+                    {t.desc}
+                  </div>
                 </button>
               ))}
             </div>
@@ -120,6 +193,7 @@ navigate({ to: "/confirmation" });
               {REASONS.map((r) => (
                 <button
                   key={r.id}
+                  type="button"
                   onClick={() => setReason(r.id)}
                   className={`p-4 rounded-lg border text-sm font-semibold transition-all bg-surface-container-lowest ${
                     reason === r.id
@@ -141,12 +215,14 @@ navigate({ to: "/confirmation" });
 
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => navigate({ to: "/products" })}
+              type="button"
+              onClick={() => navigate({ to: "/" })}
               className="px-6 py-3 rounded-lg border border-outline-variant font-semibold hover:bg-surface-container transition-all"
             >
               Back
             </button>
             <button
+              type="button"
               onClick={submit}
               disabled={!returnType || !reason || submitting}
               className="px-6 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 transition-all disabled:opacity-50"

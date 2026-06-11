@@ -21,3 +21,6 @@ class StartReturnRequest(BaseModel):
 
 class UpdateStatusRequest(BaseModel):
     status: str
+
+class ReasonRequest(BaseModel):
+    message: str

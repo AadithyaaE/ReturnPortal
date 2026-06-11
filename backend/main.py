@@ -8,10 +8,13 @@ from models import (
     ReturnRequest,
     StartReturnRequest,
     UpdateStatusRequest
-) 
+)
+from models import ReasonRequest
+from aireason import classify_reason
 
 from fastapi import HTTPException
 
+import database
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +23,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=["http://localhost:8080",
+        "http://localhost:8081",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8081",],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -573,3 +579,12 @@ def get_return_summary():
         "approved": approved,
         "rejected": rejected
     }
+
+@app.post("/ai/classify-reason")
+def ai_classify_reason(request: ReasonRequest):
+
+    result = classify_reason(
+        request.message
+    )
+
+    return result
