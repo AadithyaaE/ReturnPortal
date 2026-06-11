@@ -11,6 +11,9 @@ from models import (
 )
 from models import ReasonRequest
 from aireason import classify_reason
+from pydantic import BaseModel
+
+
 
 from fastapi import HTTPException
 
@@ -20,6 +23,9 @@ import database
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+class ChatRequest(BaseModel):
+    message: str
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -588,3 +594,63 @@ def ai_classify_reason(request: ReasonRequest):
     )
 
     return result
+
+@app.post("/ai/chat")
+def ai_chat(req: ChatRequest):
+    import json
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_mistralai import ChatMistralAI
+    try:
+
+        llm=ChatMistralAI(model="mistral-small-2506")
+        prompt = f"""
+Customer message:
+{req.message}
+
+Respond like a friendly ecommerce support agent.
+
+Valid reasons:
+- Wrong Size
+- Damaged Item
+- Wrong Item
+- Changed Mind
+
+Valid recommendations:
+- Refund
+- Exchange
+- Store Credit
+
+If the customer mentions a sizing issue, return:
+
+{{
+  "reply": "This sounds like a sizing issue.",
+  "reason": "Wrong Size",
+  "recommendation": "Exchange"
+}}
+
+If the customer mentions damage, return:
+
+{{
+  "reply": "This sounds like a damaged item.",
+  "reason": "Damaged Item",
+  "recommendation": "Refund"
+}}
+
+Return ONLY valid JSON.
+"""
+
+        response = llm.invoke(prompt)
+        cleaned = response.content
+        cleaned = cleaned.replace("```json", "")
+        cleaned = cleaned.replace("```", "")
+        cleaned = cleaned.strip()
+
+        print(cleaned)
+
+        return json.loads(cleaned)
+    except Exception as e:
+
+        return {
+            "reply": f"AI unavailable: {str(e)}",
+            "options": []
+        }
