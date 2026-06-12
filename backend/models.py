@@ -4,6 +4,7 @@ class ReturnRequest(BaseModel):
     order_number: str
     customer_email: str
     product_id: int
+    variant_id: int
     product_title: str
     quantity: int
     return_type: str
@@ -15,6 +16,7 @@ class StartReturnRequest(BaseModel):
     order_number: str
     email: str
     product_id: int
+    variant_id: int
     quantity: int
     return_type: str
     reason: str

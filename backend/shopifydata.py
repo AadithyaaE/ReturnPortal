@@ -2,7 +2,6 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# Load .env variables
 load_dotenv()
 
 SHOP = os.getenv("SHOPIFY_STORE")
@@ -15,36 +14,50 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Get orders from Shopify
 response = requests.get(url, headers=headers)
 
 if response.status_code == 200:
 
     orders = response.json()["orders"]
 
-    print(f"\nTotal Orders Found: {len(orders)}")
+    print(f"\nTotal Orders Found: {len(orders)}\n")
 
-    print("\n===== TOP LEVEL ORDER KEYS =====\n")
+    print("=" * 60)
 
-    for key in orders[0].keys():
-        print(key)
+    for order in orders:
 
-    print("\n===== ORDER KEY DATA TYPES =====\n")
+        print(f"\nOrder Number: {order.get('name')}")
 
-    for key, value in orders[0].items():
-        print(f"{key} -> {type(value)}")
+        customer_email = (
+            (order.get("customer") or {})
+            .get("email", "No Email")
+        )
 
-    print("\n===== CUSTOMER KEYS =====\n")
+        print(f"Customer Email: {customer_email}")
 
-    if "customer" in orders[0] and orders[0]["customer"]:
-        for key in orders[0]["customer"].keys():
-            print(key)
+        print("\nProducts:")
 
-    print("\n===== LINE ITEM KEYS =====\n")
+        for item in order.get("line_items", []):
 
-    if orders[0]["line_items"]:
-        for key in orders[0]["line_items"][0].keys():
-            print(key)
+            print("-" * 40)
+
+            print(
+                f"Title      : {item.get('title')}"
+            )
+
+            print(
+                f"Product ID : {item.get('product_id')}"
+            )
+
+            print(
+                f"Variant ID : {item.get('variant_id')}"
+            )
+
+            print(
+                f"Quantity   : {item.get('quantity')}"
+            )
+
+        print("\n" + "=" * 60)
 
 else:
     print("Error:", response.status_code)

@@ -86,6 +86,7 @@ def get_products(order):
 
         products.append({
             "product_id": item["product_id"],
+            "variant_id": item["variant_id"],
             "title": item["title"],
             "variant": item["variant_title"],
             "quantity": item["quantity"],
@@ -114,16 +115,16 @@ def is_delivered(order):
 
     return order["fulfillment_status"] == "fulfilled"
 
-def check_return_eligibility(order, product_id):
+def check_return_eligibility(order, variant_id):
 
     # Rule 1: Product exists in order
     product_found = False
 
     for item in order["line_items"]:
-        if item["product_id"] == product_id:
+        if item["variant_id"] == variant_id:
             product_found = True
             break
-        
+
     # Rule 2: Delivered?
 
     if not is_delivered(order):
@@ -138,14 +139,16 @@ def check_return_eligibility(order, product_id):
             "message": "Product not found in order"
         }
 
-    # Rule 2: Return window
+    # Rule 3: Return window
+
     if not is_return_eligible(order):
         return {
             "eligible": False,
             "message": "Return window expired"
         }
 
-    # Rule 3: Already returned
+    # Rule 4: Already returned
+
     conn = sqlite3.connect("returns.db")
     cursor = conn.cursor()
 
@@ -153,12 +156,12 @@ def check_return_eligibility(order, product_id):
         """
         SELECT * FROM returns
         WHERE order_number = ?
-        AND product_id = ?
+        AND variant_id = ?
         AND status IN ('Pending', 'Approved')
         """,
         (
             order["name"],
-            product_id
+            variant_id
         )
     )
 
@@ -330,7 +333,7 @@ def start_return(request: StartReturnRequest):
 
     eligibility = check_return_eligibility(
     order,
-    request.product_id
+    request.variant_id
     )
 
 
@@ -360,7 +363,8 @@ def start_return(request: StartReturnRequest):
 
     for item in order["line_items"]:
 
-        if item["product_id"] == request.product_id:
+        if (item["product_id"] == request.product_id
+            and item["variant_id"]==request.variant_id):
             selected_product = item
             break
 
@@ -377,18 +381,20 @@ def start_return(request: StartReturnRequest):
         order_number,
         customer_email,
         product_id,
+        variant_id,
         product_title,
         quantity,
         return_type,
         reason,
         status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
     """,
     (
         order["name"],
         order["email"],
         selected_product["product_id"],
+        selected_product["variant_id"],
         selected_product["title"],
         request.quantity,
         request.return_type,
@@ -654,3 +660,39 @@ Return ONLY valid JSON.
             "reply": f"AI unavailable: {str(e)}",
             "options": []
         }
+    
+
+@app.get("/returns")
+def get_all_returns():
+
+    conn = sqlite3.connect("returns.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT * FROM returns
+        ORDER BY id DESC
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    result = []
+
+    for row in rows:
+
+        result.append({
+            "id": row[0],
+            "order_number": row[1],
+            "customer_email": row[2],
+            "product_id": row[3],
+            "product_title": row[4],
+            "quantity": row[5],
+            "return_type": row[6],
+            "reason": row[7],
+            "status": row[8]
+        })
+
+    return result

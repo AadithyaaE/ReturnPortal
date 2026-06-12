@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppFooter, AppHeader } from "@/components/AppHeader";
 import { API_BASE, setState } from "@/lib/return-store";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -99,13 +100,38 @@ function Index() {
                   {error}
                 </div>
               )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-on-primary py-4 px-6 rounded-lg font-semibold hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-60"
-              >
-                {loading ? "Finding Order..." : "Find Order →"}
-              </button>
+              <div className="flex gap-3">
+
+<div className="flex gap-3">
+
+  <button
+    type="submit"
+    disabled={loading}
+    className="flex-1 bg-primary text-on-primary py-4 px-6 rounded-lg font-semibold hover:opacity-90"
+  >
+    {loading ? "Finding Order..." : "Find Order →"}
+  </button>
+
+  <button
+    type="button"
+    onClick={() => navigate({ to: "/track-return" })}
+    className="flex-1 border border-outline-variant py-4 px-6 rounded-lg font-semibold hover:bg-surface-container"
+  >
+    Track Return
+  </button>
+
+  <button
+    type="button"
+    onClick={() => navigate({ to: "/admin-login" })}
+    className="flex-1 border border-outline-variant py-4 px-6 rounded-lg font-semibold hover:bg-surface-container"
+  >
+    Admin
+  </button>
+
+</div>
+
+</div>
+              
             </form>
           </div>
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-3">

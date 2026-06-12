@@ -32,6 +32,7 @@ const empty = {
   order: null,
   products: [],
   selected_product_id: null,
+  selected_Variant_id:null,
   return_type: null,
   reason: null,
   return_id: null

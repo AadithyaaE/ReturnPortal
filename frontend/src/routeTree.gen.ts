@@ -9,11 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackReturnRouteImport } from './routes/track-return'
 import { Route as ReturnOptionsRouteImport } from './routes/return-options'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as ConfirmationRouteImport } from './routes/confirmation'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TrackReturnRoute = TrackReturnRouteImport.update({
+  id: '/track-return',
+  path: '/track-return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReturnOptionsRoute = ReturnOptionsRouteImport.update({
   id: '/return-options',
   path: '/return-options',
@@ -29,6 +37,16 @@ const ConfirmationRoute = ConfirmationRouteImport.update({
   path: '/confirmation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,40 +55,81 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/admin-login': typeof AdminLoginRoute
   '/confirmation': typeof ConfirmationRoute
   '/products': typeof ProductsRoute
   '/return-options': typeof ReturnOptionsRoute
+  '/track-return': typeof TrackReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/admin-login': typeof AdminLoginRoute
   '/confirmation': typeof ConfirmationRoute
   '/products': typeof ProductsRoute
   '/return-options': typeof ReturnOptionsRoute
+  '/track-return': typeof TrackReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/admin-login': typeof AdminLoginRoute
   '/confirmation': typeof ConfirmationRoute
   '/products': typeof ProductsRoute
   '/return-options': typeof ReturnOptionsRoute
+  '/track-return': typeof TrackReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/confirmation' | '/products' | '/return-options'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin-login'
+    | '/confirmation'
+    | '/products'
+    | '/return-options'
+    | '/track-return'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/confirmation' | '/products' | '/return-options'
-  id: '__root__' | '/' | '/confirmation' | '/products' | '/return-options'
+  to:
+    | '/'
+    | '/admin'
+    | '/admin-login'
+    | '/confirmation'
+    | '/products'
+    | '/return-options'
+    | '/track-return'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin-login'
+    | '/confirmation'
+    | '/products'
+    | '/return-options'
+    | '/track-return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   ConfirmationRoute: typeof ConfirmationRoute
   ProductsRoute: typeof ProductsRoute
   ReturnOptionsRoute: typeof ReturnOptionsRoute
+  TrackReturnRoute: typeof TrackReturnRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/track-return': {
+      id: '/track-return'
+      path: '/track-return'
+      fullPath: '/track-return'
+      preLoaderRoute: typeof TrackReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/return-options': {
       id: '/return-options'
       path: '/return-options'
@@ -92,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfirmationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,9 +177,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AdminLoginRoute: AdminLoginRoute,
   ConfirmationRoute: ConfirmationRoute,
   ProductsRoute: ProductsRoute,
   ReturnOptionsRoute: ReturnOptionsRoute,
+  TrackReturnRoute: TrackReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

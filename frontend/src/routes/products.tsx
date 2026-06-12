@@ -25,11 +25,20 @@ function ProductsPage() {
     setOrderNumber(s.order_number);
   }, [navigate]);
 
-  function selectAndContinue(id: string | number) {
-    setSelected(id);
-    setState({ selected_product_id: id });
-    setTimeout(() => navigate({ to: "/return-options" }), 150);
-  }
+function selectAndContinue(product: any) {
+
+  setSelected(product.product_id);
+
+  setState({
+    selected_product_id: product.product_id,
+    selected_variant_id: product.variant_id,
+  });
+
+  setTimeout(
+    () => navigate({ to: "/return-options" }),
+    150
+  );
+}
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -88,7 +97,7 @@ function ProductsPage() {
                         {price ? `$${price}` : ""}
                       </span>
                       <button
-                        onClick={() => selectAndContinue(id)}
+                        onClick={() => selectAndContinue(p)}
                         className="flex items-center gap-2 px-4 py-2 border border-outline rounded-lg text-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all"
                       >
                         {isSelected ? "Selected ✓" : "+ Select"}

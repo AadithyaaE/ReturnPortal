@@ -172,6 +172,7 @@ Recommended Resolution: ${data.recommendation}
           order_number: s.order_number,
           email: s.email,
           product_id: s.selected_product_id,
+          variant_id: s.selected_variant_id,
           quantity: 1,
           return_type: returnType,
           reason,

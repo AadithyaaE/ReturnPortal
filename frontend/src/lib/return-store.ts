@@ -16,6 +16,7 @@ export type ReturnState = {
   order: any;
   products: Product[];
   selected_product_id: string | number | null;
+  selected_variant_id:string | number | null;
   return_type: string | null;
   reason: string | null;
   return_id: string | null;
@@ -29,6 +30,7 @@ const empty: ReturnState = {
   order: null,
   products: [],
   selected_product_id: null,
+  selected_variant_id:null,
   return_type: null,
   reason: null,
   return_id: null,
